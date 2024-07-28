@@ -34,14 +34,14 @@ class ClientKeepAliveOptions {
   bool get shouldSendPings => pingInterval != null;
 }
 
-sealed class KeepAliveState {
+abstract class KeepAliveState {
   KeepAliveState? onEvent(KeepAliveEvent event, ClientKeepAlive manager);
 
   void disconnect();
 }
 
 /// Transport has no active rpcs. We don't need to do any keepalives.
-final class Idle extends KeepAliveState {
+class Idle extends KeepAliveState {
   final Timer? pingTimer;
   final Stopwatch timeSinceFrame;
 
@@ -71,7 +71,7 @@ final class Idle extends KeepAliveState {
 
 /// We have scheduled a ping to be sent in the future. We may decide to delay
 /// it if we receive some data.
-final class PingScheduled extends KeepAliveState {
+class PingScheduled extends KeepAliveState {
   final Timer pingTimer;
   final Stopwatch timeSinceFrame;
 
@@ -106,7 +106,7 @@ final class PingScheduled extends KeepAliveState {
 }
 
 /// We need to delay the scheduled keepalive ping.
-final class PingDelayed extends KeepAliveState {
+class PingDelayed extends KeepAliveState {
   final Timer pingTimer;
   final Stopwatch timeSinceFrame;
 
@@ -133,7 +133,7 @@ final class PingDelayed extends KeepAliveState {
 }
 
 /// The ping has been sent out. Waiting for a ping response.
-final class ShutdownScheduled extends KeepAliveState {
+class ShutdownScheduled extends KeepAliveState {
   final bool isIdle;
   final Timer shutdownTimer;
 
@@ -163,7 +163,7 @@ final class ShutdownScheduled extends KeepAliveState {
   void disconnect() => shutdownTimer.cancel();
 }
 
-final class Disconnected extends KeepAliveState {
+class Disconnected extends KeepAliveState {
   @override
   void disconnect() {}
 
